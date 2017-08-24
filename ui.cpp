@@ -105,7 +105,7 @@ int digitalRead(int pin)
     }
     else if (pin == PN_Gate)
     {
-        return Gate ? HIGH : LOW;
+        return Gate ? LOW : HIGH;
     }
     return LOW;
 }
@@ -301,7 +301,7 @@ public:
         _button->setGeometry(10, 330, 200, 32);
         _gateButton = new QPushButton("Gate", this);
         _gateButton->setGeometry(220, 330, 200, 32);
-        _gateButton->setCheckable(true);
+
         
         _snapCount = new QLabel(this);
         _snapCount->setGeometry(800 - 10 - 64, 20, 64, 20);
@@ -326,13 +326,14 @@ public:
         _deleteAllSnaps = new QPushButton("Clear", this);
         _deleteAllSnaps->setGeometry(430, 10, 100, 32);
 
-        connect(_gateButton, &QPushButton::toggled, this, &MainWnd::GateChanged);
+        connect(_gateButton, &QPushButton::pressed, this, &MainWnd::GatePressed);
+        connect(_gateButton, &QPushButton::released, this, &MainWnd::GateReleased);
         connect(_button, &QPushButton::pressed, this, &MainWnd::ButtonPressed);
         connect(_button, &QPushButton::released, this, &MainWnd::ButtonReleased);
         connect(_spinBox, (void(QSpinBox::*)(int))&QSpinBox::valueChanged, this, &MainWnd::SpinBoxValueChanged);
         connect(_deleteAllSnaps, &QPushButton::clicked, this, &MainWnd::DeleteAllSnaps);
 
-        UpdateGateButtonLabel();
+
         UpdateLabelsFromSnapshot();
         UpdateCount();
 
@@ -409,13 +410,23 @@ public slots:
             CurrentSnap(Clock::now())->gate = gateChecked;
             ISR_Gate();
         }
-        UpdateGateButtonLabel();
+    }
+
+    void GatePressed()
+    {
+        GateChanged(true);
+    }
+
+    void GateReleased()
+    {
+        GateChanged(false);
     }
 
     void ButtonPressed()
     {
         ButtonPressedOrReleased(true);
     }
+
     void ButtonReleased()
     {
         ButtonPressedOrReleased(false);
@@ -501,7 +512,7 @@ public slots:
         if (!_snaps.empty())
         {
             auto& snap = _snaps[_spinBox->value() - 1];
-            _snapStatusLabel->setText("Time: " + FormatTime(snap.snapshotTime) + ", Gate: " + (snap.gate ? "Open" : "Closed") + ", Button: " + (snap.button ? "Pressed" : "Released"));
+            _snapStatusLabel->setText("Time: " + FormatTime(snap.snapshotTime) + ", Gate: " + (snap.gate ? "Pressed" : "Released") + ", Button: " + (snap.button ? "Pressed" : "Released"));
         }
         else
             _snapStatusLabel->setText("No snapshot");
@@ -561,10 +572,6 @@ private:
         }
     }
 
-    void UpdateGateButtonLabel()
-    {
-        _gateButton->setText(_gateButton->isChecked() ? "Gate Open" : "Gate Closed");
-    }
     void SetBg(QWidget* widget, const QColor& color)
     {
         QPalette palette = widget->palette();

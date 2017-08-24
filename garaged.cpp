@@ -23,9 +23,9 @@ static bool IsButtonPressed()
     return (digitalRead(PN_Button) == LOW);
 }
 
-static bool IsGateOpen()
+static bool IsGatePressed()
 {
-    return (digitalRead(PN_Gate) != LOW);
+    return (digitalRead(PN_Gate) == LOW);
 }
 
 static std::ostream& WriteCurTime(std::ostream& s)
@@ -209,12 +209,10 @@ void Garaged::Exec()
                     {
                         if (_lightMode != LM_On)
                         {
-                            _skipGate = false;
                             ControlLight(LM_On);
                         }
                         else
                         {
-                            _skipGate = true;
                             ControlLight(LM_Off);
                         }
                     }
@@ -224,27 +222,32 @@ void Garaged::Exec()
         }
         else if (evt.Type() == ET_Gate)
         {
-            if (_gateOpen != IsGateOpen())
+            if (_gatePressed != IsGatePressed())
             {
-                _gateOpen = !_gateOpen;
-                if (_gateOpen)
+                _gatePressed = !_gatePressed;
+                if (_gatePressed)
                 {
-                    Log("Gate opened");
-
-                    if (!_skipGate)
+                    Log("Gate button pressed");
+                    _gatePressTime = Clock::now();
+                    _gatePressInstantAction = (_lightMode == LM_Off);
+                    if(_gatePressInstantAction)
                     {
                         ControlLight(LM_On);
                     }
                 }
                 else
                 {
-                    Log("Gate closed");
-
-                    _skipGate = false;
-
-                    if (_lightMode == LM_On)
+                    Log("Gate button released");
+                    if (!_gatePressInstantAction)
                     {
-                        ControlLight(LM_AlmostOff);
+                        if (_lightMode == LM_On)
+                        {
+                            ControlLight(LM_Off);
+                        }
+                        else
+                        {
+                            ControlLight(LM_On);
+                        }
                     }
                 }
             }

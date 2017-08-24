@@ -14,14 +14,14 @@ const Duration BlinkOnTime = std::chrono::milliseconds(500);
 const Duration BlinkOffTime = std::chrono::milliseconds(1500);
 const Duration LightFinalOffTimeout = std::chrono::seconds(12);
 const Duration LightTimeoutBlink = std::chrono::milliseconds(300);
-const Duration LightTooLongTimeout = std::chrono::minutes(20);
+const Duration LightTooLongTimeout = std::chrono::minutes(25);
 const Duration ButtonHaltTime = std::chrono::seconds(7);
 const Duration ButtonContinueTime = std::chrono::milliseconds(1200);
 const Duration WriteStatsTime = std::chrono::hours(4);
 const Duration DisplayTimeLeftTime = std::chrono::milliseconds(2700);
 const Duration DisplayTimeLeftBlinkOnTime = std::chrono::milliseconds(70);
 const Duration DisplayTimeLeftBlinkOffTime = std::chrono::milliseconds(250);
-const Duration DisplayTimeLeftPeriod = std::chrono::minutes(4);
+const Duration DisplayTimeLeftPeriod = std::chrono::minutes(5);
 
 class Garaged
 {
@@ -56,12 +56,13 @@ private:
     void ControlLight(LightMode newMode);
 
     EventQueue _q;
-    bool _gateOpen = false;
+    bool _gatePressed = false;
     bool _buttonPressed = false;
-    bool _skipGate = false;
     LightMode _lightMode = LM_Off;
     Time _lightOnTime = Time();
     Time _buttonPressTime = Time();
+    Time _gatePressTime = Time();
+    bool _gatePressInstantAction = false;
     std::ofstream _log;
 };
 
