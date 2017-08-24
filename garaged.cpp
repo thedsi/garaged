@@ -240,13 +240,26 @@ void Garaged::Exec()
                     Log("Gate button released");
                     if (!_gatePressInstantAction)
                     {
-                        if (_lightMode == LM_On)
+
+                        Duration dur = Clock::now() - _gatePressTime;
+                        if (dur > ButtonContinueTime)
                         {
-                            ControlLight(LM_Off);
+                            if (_lightMode != LM_Off)
+                            {
+                                ControlLight(LM_AlmostOff);
+                                ControlLight(LM_On);
+                            }
                         }
                         else
                         {
-                            ControlLight(LM_On);
+                            if (_lightMode != LM_On)
+                            {
+                                ControlLight(LM_On);
+                            }
+                            else
+                            {
+                                ControlLight(LM_Off);
+                            }
                         }
                     }
                 }
